@@ -1,4 +1,3 @@
-const { request } = require('express');
 const { nanoid } = require('nanoid');
 const books = require('./books');
 
@@ -20,6 +19,7 @@ const addBooksHandler = (request, h) => {
   const insertedAt = new Date().toISOString();
   const updatedAt = insertedAt;
  
+  // Create new book
   const newBooks = {
     id,
     name, 
@@ -84,8 +84,56 @@ const addBooksHandler = (request, h) => {
 
 };
 
-const getAllBooksHandler = () => ({
+const getAllBooksHandler = (request, h) => {
 
+  const { reading, finished, name } = request.query;
+
+  // Get all reading books
+  if ( reading ){
+    const filteredsBook = books.filter((book) => Number(book.reading) === Number(reading) );
+    return {
+      status: 'success',
+      data: {
+        books: filteredsBook.map((book) =>({
+          id: book.id,
+          name: book.name,
+          publisher: book.publisher
+        }))
+      },
+    };
+  }
+
+  // Get all finished books
+  if ( finished ){
+    const filteredsBook = books.filter((book) => Number(book.finished) === Number(finished) );
+    return {
+      status: 'success',
+      data: {
+        books: filteredsBook.map((book) =>({
+          id: book.id,
+          name: book.name,
+          publisher: book.publisher
+        }))
+      },
+    };
+  }
+
+  // Get all books which contain name from url
+  if ( name ){
+    const filteredsBook = books.filter((book) => book.name.toLowerCase().includes(name.toLowerCase()) );
+    return {
+      status: 'success',
+      data: {
+        books: filteredsBook.map((book) =>({
+          id: book.id,
+          name: book.name,
+          publisher: book.publisher
+        }))
+      },
+    };
+  }
+
+  return {
     status: 'success',
     data: {
         books: books.map((book) =>({
@@ -94,11 +142,12 @@ const getAllBooksHandler = () => ({
           publisher: book.publisher
         })),
     },
-}); 
+  }
+}; 
 
 const getBookByIdHandler = (request, h) => {
+ 
   const { id } = request.params;
-
   const book = books.filter((n) => n.id === id)[0];
 
   if (book !== undefined) {
@@ -179,7 +228,7 @@ const editBookByIdHandler = ( request, h ) =>{
   return response;
 };
 
-const deleteBookbyIdHanlder = (request , h) =>{
+const deleteBookbyIdHandler = (request , h) =>{
   const { id } = request.params;
 
   const index = books.findIndex((book)=> book.id === id);
@@ -208,5 +257,5 @@ module.exports = {
   getAllBooksHandler,
   getBookByIdHandler,
   editBookByIdHandler,
-  deleteBookbyIdHanlder
+  deleteBookbyIdHandler
 };
